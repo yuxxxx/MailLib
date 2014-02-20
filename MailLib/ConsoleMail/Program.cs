@@ -43,15 +43,17 @@ namespace ConsoleMail
                     pop.Login(username, password);
 
                     // POP サーバに溜まっているメールのリストを取得します。
-                    ArrayList list = pop.GetList();
-                    ArrayList size_list = pop.GetSizeList();
-                    ArrayList uidl_list = pop.GetUidlList();
-
+                    List<string> list = pop.GetList().ToList();
+                    List<string> size_list = pop.GetSizeList().ToList();
+                    List<string> uidl_list = pop.GetUidlList().ToList();
+                    var maillist = list.
+                        Zip(size_list, (List, Size) => new { Mail = pop.GetMail(List), Size }).
+                        Zip(uidl_list, (l, Uidl) => new { l.Mail, l.Size, Uidl });
                     for (int i = 0; i < list.Count; ++i) {
                         // メール本体を取得します。
-                        string mail = pop.GetMail((string)list[i]);
-                        string size = (string)size_list[i];
-                        string uidl = (string)uidl_list[i];
+                        string mail = pop.GetMail(list[i]);
+                        string size = size_list[i];
+                        string uidl = uidl_list[i]; 
 
                         // 確認用に取得したメールをそのままカレントディレクトリに書き出します。
                         using (StreamWriter sw = new StreamWriter(DateTime.Now.ToString("yyyyMMddHHmmssfff") + i.ToString("0000") + ".txt")) {
@@ -62,11 +64,8 @@ namespace ConsoleMail
                         // ★注意★
                         // 削除したメールを元に戻すことはできません。
                         // 本当に削除していい場合は以下のコメントをはずしてください。
-                        //pop.Delete((string)list[i]);
+                        //pop.Delete(list[i]);
                     }
-
-                    // 切断します。
-                    pop.Close();
                 }
             }
             catch (PopException ex) {
@@ -101,9 +100,9 @@ namespace ConsoleMail
             Console.WriteLine("--");
 
             // デコードしたFrom、To、Subject を表示します。
-            Console.WriteLine(MailHeader.Decode(mail.Header["From"][0]));
-            Console.WriteLine(MailHeader.Decode(mail.Header["To"][0]));
-            Console.WriteLine(MailHeader.Decode(mail.Header["Subject"][0]));
+            Console.WriteLine(Header.Decode(mail.Header["From"][0]));
+            Console.WriteLine(Header.Decode(mail.Header["To"][0]));
+            Console.WriteLine(Header.Decode(mail.Header["Subject"][0]));
             Console.WriteLine("--");
 
             // Content-Type を表示します。
@@ -144,9 +143,9 @@ namespace ConsoleMail
             Console.WriteLine("--");
 
             // デコードしたFrom、To、Subject を表示します。
-            Console.WriteLine(MailHeader.Decode(mail.Header["From"][0]));
-            Console.WriteLine(MailHeader.Decode(mail.Header["To"][0]));
-            Console.WriteLine(MailHeader.Decode(mail.Header["Subject"][0]));
+            Console.WriteLine(Header.Decode(mail.Header["From"][0]));
+            Console.WriteLine(Header.Decode(mail.Header["To"][0]));
+            Console.WriteLine(Header.Decode(mail.Header["Subject"][0]));
             Console.WriteLine("--");
 
             // Content-Type を表示します。
@@ -156,7 +155,7 @@ namespace ConsoleMail
             // 1つ目のパートの Content-Type、メール本文を表示します。
             // 本来は Content-Type の charset を参照してデコードすべきですが
             // ここではサンプルとして iso-2022-jp 固定でデコードします。
-            MailMultipart part1 = mail.Body.Multiparts[0];
+            Multipart part1 = mail.Body.Multiparts[0];
             Console.WriteLine("パート1");
             Console.WriteLine(part1.Header["Content-Type"][0]);
             Console.WriteLine("--");
@@ -171,7 +170,7 @@ namespace ConsoleMail
             // 2つ目のパートの Content-Type を表示し、BASE64 をデコードしてファイルとして保存します。
             // 本来は Content-Transfer-Encoding が base64 であることを確認したり、
             // Content-Type の name を参照してファイル名を決めたりすべきですが、ここでは省略しています。
-            MailMultipart part2 = mail.Body.Multiparts[1];
+            Multipart part2 = mail.Body.Multiparts[1];
             Console.WriteLine("パート2");
             Console.WriteLine(part2.Header["Content-Type"][0]);
             Console.WriteLine("--");

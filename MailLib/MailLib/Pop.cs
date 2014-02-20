@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using System.Net.Sockets;
+using System.Diagnostics;
 
 namespace MailLib
 {
@@ -57,70 +58,35 @@ namespace MailLib
         public void Login(string username, string password)
         {
             // ユーザ名送信
-            SendLine("USER " + username);
-            string s = ReadLine();
-            if (!s.StartsWith("+OK")) {
-                throw new PopException("USER 送信時に POP サーバが \"" + s + "\" を返しました。");
-            }
+            SendCommand("USER", username);
 
             // パスワード送信
-            SendLine("PASS " + password);
-            s = ReadLine();
-            if (!s.StartsWith("+OK")) {
-                throw new PopException("PASS 送信時に POP サーバが \"" + s + "\" を返しました。");
-            }
+            SendCommand("PASS", password);
         }
 
         /// <summary>
         /// POP サーバに溜まっているメールのリストを取得します。
         /// </summary>
         /// <returns>System.String を格納した ArrayList。</returns>
-        public ArrayList GetList()
+        public IEnumerable<string> GetList()
         {
-            // LIST 送信
-            SendLine("LIST");
-            string s = ReadLine();
-            if (!s.StartsWith("+OK")) {
-                throw new PopException("LIST 送信時に POP サーバが \"" + s + "\" を返しました。");
-            }
+             // LIST 送信
+            SendCommand("LIST");
 
-            // サーバにたまっているメールの数を取得
-            ArrayList list = new ArrayList();
-
-            while (true) {
-                s = ReadLine();
-                if (s == ".") {
-                    // 終端に到達
-                    break;
-                }
-                // メール番号部分のみを取り出し格納
-                int p = s.IndexOf(' ');
-                if (p > 0) {
-                    s = s.Substring(0, p);
-                }
-                list.Add(s);
-            }
-            return list;
+            return ReadLines();
         }
 
         /// <summary>
         /// POP サーバに溜まっているメールのサイズリストを取得します。
         /// </summary>
         /// <returns>System.String を格納した ArrayList。</returns>
-        public ArrayList GetSizeList()
+        public IEnumerable<string> GetSizeList()
         {
             // LIST 送信
-            SendLine("LIST");
-            string s = ReadLine();
-            if (!s.StartsWith("+OK")) {
-                throw new PopException("LIST 送信時に POP サーバが \"" + s + "\" を返しました。");
-            }
-
-            // サーバにたまっているメールの数を取得
-            ArrayList list = new ArrayList();
+            SendCommand("LIST");
 
             while (true) {
-                s = ReadLine();
+                var s = ReadLine();
                 if (s == ".") {
                     // 終端に到達
                     break;
@@ -130,41 +96,20 @@ namespace MailLib
                 if (p > 0) {
                     s = s.Substring((p + 1), s.Length - (p + 1));
                 }
-                list.Add(s);
+                yield return s;
             }
-            return list;
         }
 
         /// <summary>
         /// POP サーバに溜まっているメールの  UIDLリストを取得します。
         /// </summary>
         /// <returns>System.String を格納した ArrayList。</returns>
-        public ArrayList GetUidlList()
+        public IEnumerable<string> GetUidlList()
         {
             // LIST 送信
-            SendLine("UIDL");
-            string s = ReadLine();
-            if (!s.StartsWith("+OK")) {
-                throw new PopException("UIDL 送信時に POP サーバが \"" + s + "\" を返しました。");
-            }
+            SendCommand("UIDL");
 
-            // サーバにたまっているメールの数を取得
-            ArrayList list = new ArrayList();
-
-            while (true) {
-                s = ReadLine();
-                if (s == ".") {
-                    // 終端に到達
-                    break;
-                }
-                // UIDL部分のみを取り出し格納
-                int p = s.IndexOf(' ');
-                if (p > 0) {
-                    s = s.Substring((p + 1), s.Length - (p + 1));
-                }
-                list.Add(s);
-            }
-            return list;
+            return ReadLines();
         }
 
         /// <summary>
@@ -175,16 +120,12 @@ namespace MailLib
         public string GetMail(string num)
         {
             // RETR 送信
-            SendLine("RETR " + num);
-            string s = ReadLine();
-            if (!s.StartsWith("+OK")) {
-                throw new PopException("RETR 送信時に POP サーバが \"" + s + "\" を返しました。");
-            }
+            SendCommand("RETR", num);
 
             // メール取得
             StringBuilder sb = new StringBuilder();
             while (true) {
-                s = ReadLine();
+                var s = ReadLine();
                 if (s == ".") {
                     // "." のみの場合はメールの終端を表す
                     break;
@@ -202,11 +143,7 @@ namespace MailLib
         public void Delete(string num)
         {
             // DELE 送信
-            SendLine("DELE " + num);
-            string s = ReadLine();
-            if (!s.StartsWith("+OK")) {
-                throw new PopException("DELE 送信時に POP サーバが \"" + s + "\" を返しました。");
-            }
+            SendCommand("DELE", num);
         }
 
         /// <summary>
@@ -215,16 +152,72 @@ namespace MailLib
         public void Close()
         {
             // QUIT 送信
-            SendLine("QUIT");
-            string s = ReadLine();
-            if (!s.StartsWith("+OK")) {
-                throw new PopException("QUIT 送信時に POP サーバが \"" + s + "\" を返しました。");
-            }
+            SendCommand("QUIT");
 
             ((IDisposable)this.reader).Dispose();
             this.reader = null;
             ((IDisposable)this.tcp).Dispose();
             this.tcp = null;
+        }
+
+        /// <summary>
+        /// コマンドを送信します。
+        /// </summary>
+        /// <param name="command">サーバーに送信するコマンド</param>
+        /// <param name="param">パラメーター</param>
+        /// <returns>送信された結果がOKならば結果を返します。</returns>
+        private string SendCommand(string command, string param = null)
+        {
+            var p = param != null ? " " + param : "";
+            SendLine(command + p);
+            string result = ReadLine();
+            if (!result.StartsWith("+OK"))
+            {
+                throw new PopException(command + " 送信時に POP サーバが \"" + result + "\" を返しました。");
+            }
+            return result;
+        }
+       
+        /// <summary>
+        /// 先頭の空白を取り除いて終端文字が現れるまで読みこみます。
+        /// </summary>
+        /// <returns></returns>
+        private IEnumerable<string> ReadLines()
+        {
+            while (true)
+            {
+                var s = ReadLine();
+                if (s == ".")
+                {
+                    // 終端に到達
+                    yield break;
+                }
+                int p = s.IndexOf(' ');
+                if (p > 0)
+                {
+                    s = s.Substring(0, p);
+                }
+                yield return s;
+            }
+        }
+
+        /// <summary>
+        /// 終端文字が現れるまで読みこみます。
+        /// </summary>
+        /// <param name="func">行を加工する関数</param>
+        /// <returns></returns>
+        private IEnumerable<string> ReadToEnd(Func<string, string> func)
+        {
+            while (true)
+            {
+                var s = ReadLine();
+                if (s == ".")
+                {
+                    // 終端に到達
+                    yield break;
+                }
+                yield return func(s);
+            }
         }
 
         /// <summary>
@@ -266,7 +259,7 @@ namespace MailLib
         /// <param name="msg">出力する文字列。</param>
         private void Print(string msg)
         {
-            Console.WriteLine(msg);
+            Debug.WriteLine(msg);
         }
     }
 }

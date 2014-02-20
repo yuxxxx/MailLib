@@ -40,7 +40,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Header.cs" />
     <Compile Include="Mail.cs" />
+    <Compile Include="Body.cs" />
+    <Compile Include="Multipart.cs" />
     <Compile Include="Pop.cs" />
     <Compile Include="PopException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

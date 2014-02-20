@@ -1,31 +1,29 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace MailLib
 {
     /// <summary>
-    /// メールを表すクラスです。
+    /// ひとつのマルチパート部をあらわすクラスです。
     /// </summary>
-    public class Mail
+    public class Multipart
     {
         /// <summary>メール本体</summary>
         private string mail;
 
-        private Header header;
+       private Header header;
         private Body body;
 
         /// <summary>
         /// コンストラクタです。
         /// </summary>
         /// <param name="mail">メール本体。</param>
-        public Mail(string mail)
+        public Multipart(string mail)
         {
             // 行頭のピリオド2つをピリオド1つに変換
-            this.mail = Regex.Replace(mail, @"\r\n\.\.", "\r\n.");
+            this.mail = mail;
             this.header = new Header(this.mail);
             this.body = new Body(this.mail);
         }

@@ -1,9 +1,13 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.30110.0
+MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailLib", "MailLib\MailLib.csproj", "{A8666963-9999-48CD-821D-936F18567150}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleMail", "ConsoleMail\ConsoleMail.csproj", "{F645A03A-0487-4347-9C66-46612EFB39D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailLibTest", "MailLibTest\MailLibTest.csproj", "{6FEAFA32-B451-4843-AEE5-9C4E270EA246}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,6 +39,16 @@ Global
 		{F645A03A-0487-4347-9C66-46612EFB39D6}.Release|Mixed Platforms.Build.0 = Release|x86
 		{F645A03A-0487-4347-9C66-46612EFB39D6}.Release|x86.ActiveCfg = Release|x86
 		{F645A03A-0487-4347-9C66-46612EFB39D6}.Release|x86.Build.0 = Release|x86
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6FEAFA32-B451-4843-AEE5-9C4E270EA246}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
