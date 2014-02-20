@@ -304,20 +304,50 @@ namespace MailLib
         }
 
         private Pop3Client client;
-        private CancellationToken token = new CancellationToken();
+        private CancellationTokenSource token = new CancellationTokenSource();
         public bool Connect(string host, int port, bool IsSSL = true)
         {
             string schema = IsSSL ? "pops://" : "pop://";
             var uri = new Uri(schema + host + ":" + port.ToString());
             try
             {
-                client.Connect(uri, token);
+                client.Connect(uri, token.Token);
             }
             catch (Exception ex)
             {
                 throw new PopException("接続時に例外が発生しました。内部例外を確認してください。", ex);
             }
             return client.IsConnected;
+        }
+
+        ~Pop()
+        {
+            client.Dispose();
+            token.Cancel();
+            token.Dispose();
+            this.Dispose();
+        }
+
+        public bool Authenticate(string user, string password)
+        {
+
+            var credential = new NetworkCredential(user, password);
+            if (client.IsConnected)
+            {
+                try
+                {
+                    client.Authenticate(credential, token.Token);
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    throw new PopException("認証時に例外が発生しました。内部例外を確認してください。", ex);
+                }
+            }
+            else
+            {
+                throw new PopException("サーバーに接続されていません。まずConnectでサーバーに接続してください。");
+            }
         }
     }
 }
