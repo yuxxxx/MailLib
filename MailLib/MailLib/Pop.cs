@@ -6,11 +6,47 @@ using System.Text;
 using System.IO;
 using System.Net.Sockets;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Reactive;
+using System.Reactive.Linq;
+using System.Net;
+using System.Threading;
+
+using MailKit.Net.Pop3;
+using MailKit;
+using MimeKit;
+
 
 namespace MailLib
 {
     public class Pop : IDisposable
     {
+
+        public void Test()
+        {
+            using (var client = new Pop3Client())
+            {
+                var credentials = new NetworkCredential("joey", "password");
+
+                // Note: if the server requires SSL-on-connect, use the "pops" protocol instead
+                var uri = new Uri("pop://mail.friends.com");
+
+                using (var cancel = new CancellationTokenSource())
+                {
+                    client.Connect(uri, cancel.Token);
+                    client.Authenticate(credentials, cancel.Token);
+
+                    int count = client.GetMessageCount(cancel.Token);
+                    for (int i = 0; i < count; i++)
+                    {
+                        var message = client.GetMessage(i, cancel.Token);
+                        Console.WriteLine("Subject: {0}", message.Subject);
+                    }
+
+                    client.Disconnect(true, cancel.Token);
+                }
+            }
+        }
         /// <summary>TCP 接続</summary>
         private TcpClient tcp = null;
 
@@ -31,8 +67,13 @@ namespace MailLib
             // オープニング受信
             string s = ReadLine();
             if (!s.StartsWith("+OK")) {
-                throw new PopException("接続時に POP サーバが \"" + s + "\" を返しました。");
+                throw new PopException("接続時に POP サーバが \"sys" + s + "\" を返しました。");
             }
+        }
+
+        public Pop()
+        {
+            client = new Pop3Client();
         }
 
         /// <summary>
@@ -260,6 +301,23 @@ namespace MailLib
         private void Print(string msg)
         {
             Debug.WriteLine(msg);
+        }
+
+        private Pop3Client client;
+        private CancellationToken token = new CancellationToken();
+        public bool Connect(string host, int port, bool IsSSL = true)
+        {
+            string schema = IsSSL ? "pops://" : "pop://";
+            var uri = new Uri(schema + host + ":" + port.ToString());
+            try
+            {
+                client.Connect(uri, token);
+            }
+            catch (Exception ex)
+            {
+                throw new PopException("接続時に例外が発生しました。内部例外を確認してください。", ex);
+            }
+            return client.IsConnected;
         }
     }
 }

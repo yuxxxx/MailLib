@@ -37,20 +37,19 @@ namespace MailLib
         {
             var reg = new Regex(@"Content-Type:\s+multipart/mixed;\s+boundary=""(?<boundary>.*?)""", RegexOptions.IgnoreCase);
             var m = reg.Match(mailheader);
-            if (m.Groups["boundary"].Value != "") {
+            if (m.Groups["boundary"].Value != "")
+            {
                 // multipart
                 string boundary = m.Groups["boundary"].Value;
                 reg = new Regex(@"^.*?--" + boundary + @"\r\n(?:(?<multipart>.*?)" + @"--" + boundary + @"-*\r\n)+.*?$", RegexOptions.Singleline);
-                m = reg.Match(mailbody);
-
-                foreach (var c in m.Groups["multipart"].Captures.Cast<Capture>()) {
-                    if (c.Value != "") {
-                        yield return new Multipart(c.Value);
-                    }
-                }
+                return from capture in reg.Match(mailbody).Groups["multipart"].Captures.Cast<Capture>()
+                       let value = capture.Value
+                       where value != ""
+                       select new Multipart(value);
             }
-            else {
-                yield return new Multipart("");
+            else
+            {
+                return new List<Multipart> { new Multipart("") };
             }
         }
 
