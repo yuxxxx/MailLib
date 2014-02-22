@@ -350,7 +350,7 @@ namespace MailLib
             }
             else
             {
-                throw new PopException("サーバーに接続されていません。まずConnectでサーバーに接続してください。");
+                throw PopException.NotConnected;
             }
         }
         
@@ -364,12 +364,14 @@ namespace MailLib
 
         public long FetchMailCount()
         {
+            if (!client.IsConnected) throw PopException.NotConnected;
             return client.GetMessageCount(token.Token);
         }
 
         public string[] FetchUids()
         {
-            throw new NotImplementedException();
+            return client.GetMessageUids(token.Token);
         }
+        
     }
 }

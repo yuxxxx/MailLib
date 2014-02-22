@@ -33,5 +33,13 @@ namespace MailLib
         public PopException(string message, Exception innerException) : base(message, innerException)
         {
         }
+
+        /// <summary>
+        /// サーバーにまだ接続されていません。
+        /// </summary>
+        public static PopException NotConnected
+        {
+            get { return new PopException("サーバーに接続されていません。まずConnectでサーバーに接続してください。"); }
+        }
     }
 }
