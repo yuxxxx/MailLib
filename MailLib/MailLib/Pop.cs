@@ -305,6 +305,13 @@ namespace MailLib
 
         private Pop3Client client;
         private CancellationTokenSource token = new CancellationTokenSource();
+        /// <summary>
+        /// サーバーに接続します。
+        /// </summary>
+        /// <param name="host">ホスト名</param>
+        /// <param name="port">ポート番号</param>
+        /// <param name="IsSSL">SSL通信を使わない場合falseに設定します。既定ではtrueです。</param>
+        /// <returns>接続に成功した場合trueを返します。</returns>
         public bool Connect(string host, int port, bool IsSSL = true)
         {
             string schema = IsSSL ? "pops://" : "pop://";
@@ -320,17 +327,14 @@ namespace MailLib
             return client.IsConnected;
         }
 
-        ~Pop()
-        {
-            client.Dispose();
-            token.Cancel();
-            token.Dispose();
-            this.Dispose();
-        }
-
+        /// <summary>
+        /// 接続しているサーバーに対して認証します。
+        /// </summary>
+        /// <param name="user">ユーザー名</param>
+        /// <param name="password">パスワード</param>
+        /// <returns>認証に成功した場合trueを返します。</returns>
         public bool Authenticate(string user, string password)
         {
-
             var credential = new NetworkCredential(user, password);
             if (client.IsConnected)
             {
@@ -348,6 +352,24 @@ namespace MailLib
             {
                 throw new PopException("サーバーに接続されていません。まずConnectでサーバーに接続してください。");
             }
+        }
+        
+        ~Pop()
+        {
+            client.Dispose();
+            token.Cancel();
+            token.Dispose();
+            this.Dispose();
+        }
+
+        public long FetchMailCount()
+        {
+            return client.GetMessageCount(token.Token);
+        }
+
+        public string[] FetchUids()
+        {
+            throw new NotImplementedException();
         }
     }
 }

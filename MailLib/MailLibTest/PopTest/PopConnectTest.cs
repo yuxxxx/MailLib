@@ -1,15 +1,17 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
+using System.Threading.Tasks;
 using MailKit.Net.Pop3;
 using MailKit;
 using MimeKit;
 using System.Threading;
 using MailLib;
 
-namespace MailLibTest
+namespace MailLibTest.PopTest
 {
     [TestClass]
-    public class PopTest
+    public class PopConnectTest
     {
         [TestMethod]
         public void CanConnect()
@@ -77,6 +79,36 @@ namespace MailLibTest
             {
                 pop.Connect(collectHost, collectPort);
             }
+            
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(PopException))]
+        public void AuthBeforeConnect()
+        {
+            string user = "username@gmail.com";
+            string password = "hogehoge";
+
+            using (var pop = new Pop())
+            {
+                pop.Authenticate(user, password).IsTrue();
+            }
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(PopException))]
+        public void InvalidCredential()
+        {
+            string collectHost = "pop.gmail.com";
+            int collectPort = 995;
+            string user = "username@gmail.com";
+            string password = "hogehoge";
+            
+            using (var pop = new Pop())
+            {
+                pop.Connect(collectHost, collectPort);
+                pop.Authenticate(user, password).IsTrue();
+            }   
         }
     }
 }

@@ -41,15 +41,22 @@
     <Reference Include="MailKit">
       <HintPath>..\packages\MailKit.0.5.0.0\lib\net40\MailKit.dll</HintPath>
     </Reference>
+    <Reference Include="MailKit.0.5.0.0.Fakes">
+      <HintPath>FakesAssemblies\MailKit.0.5.0.0.Fakes.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Expression.Interactions, Version=4.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Unofficial.Blend.Interactivity.1.0.0\lib\net45\Microsoft.Expression.Interactions.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Reactive.Testing">
       <HintPath>..\packages\Rx-Testing.2.2.2\lib\net45\Microsoft.Reactive.Testing.dll</HintPath>
     </Reference>
     <Reference Include="MimeKit">
       <HintPath>..\packages\MimeKit.0.26.0.0\lib\net40\MimeKit.dll</HintPath>
+    </Reference>
+    <Reference Include="MimeKit.0.26.0.0.Fakes">
+      <HintPath>FakesAssemblies\MimeKit.0.26.0.0.Fakes.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Data.Sqlite">
       <HintPath>..\packages\MimeKit.0.26.0.0\lib\net40\Mono.Data.Sqlite.dll</HintPath>
@@ -108,11 +115,14 @@
   </Choose>
   <ItemGroup>
     <Compile Include="ChainingAssertion.MSTest.cs" />
-    <Compile Include="PopTest.cs" />
+    <Compile Include="PopTest\PopConnectTest.cs" />
+    <Compile Include="PopTest\MailLoadTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <Fakes Include="Fakes\MailKit.fakes" />
+    <Fakes Include="Fakes\MimeKit.fakes" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
